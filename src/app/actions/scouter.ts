@@ -24,55 +24,17 @@ export async function getScoutedJobs() {
 }
 
 export async function runScouterAgent(profileData: any) {
-    if (!process.env.JOOBLE_API_KEY) {
-        return { error: "Jooble API key not configured." }
-    }
-
-    // Step 1: Fetch Real Jobs from Jooble
-    // Join target roles with ' OR ' so Jooble searches for any of them, not an exact string matching all words.
     const keywords = profileData.target_roles.join(" OR ") || "Software Engineer";
     const location = profileData.remote_only ? "Remote" : profileData.location;
 
-    let realJobs = [];
     try {
-        const joobleResponse = await fetch(`https://jooble.org/api/${process.env.JOOBLE_API_KEY}`, {
-            method: 'POST',
-            cache: 'no-store', // CRITICAL: Stop Next.js from caching the identical job payload
-            headers: {
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify({
-                keywords: keywords,
-                location: location,
-                radius: profileData.remote_only ? 0 : profileData.distance_miles,
-                ResultingFrom: Math.floor(Math.random() * 3) + 1, // Randomize page 1-3 to get broader variations
-                count: 30 // Pull slightly more to ensure AI has fresh options
-            })
-        });
+        const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY })
 
-        if (!joobleResponse.ok) {
-            return { error: "Failed to fetch jobs from Jooble API." }
-        }
-
-        const joobleData = await joobleResponse.json();
-        realJobs = joobleData.jobs || [];
-
-        if (realJobs.length === 0) {
-            return { error: `No active jobs found on Jooble for ${keywords} in ${location}.` }
-        }
-
-    } catch (err: any) {
-        console.error("Error fetching from Jooble:", err);
-        return { error: err.message || "Job Search API failure." }
-    }
-
-    // Step 2: Use Gemini to filter and shape the best matches
-    const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY })
-
-    const prompt = `
+        const prompt = `
 You are the Nexatask Orchestrating Agent.
-I am providing you with a list of ${realJobs.length} real, active job postings fetched from an API.
-Your task is to analyze these jobs against the user's profile, select the top 10 best matching jobs, and format them perfectly into the required JSON schema.
+Your task is to use the Google Search tool to find 5 to 10 recent, currently open job postings for "${keywords}" in "${location}".
+Focus heavily on direct company careers pages, LinkedIn, or high-quality startup boards like BuiltIn or YCombinator.
+DO NOT return aggregate results from Jooble, ZipRecruiter, or Indeed if possible.
 
 ======= USER PROFILE =======
 Name: ${profileData.name}
@@ -80,41 +42,40 @@ Role Target: ${profileData.target_roles.join(', ')}
 Skills & Certs: ${profileData.certifications.join(', ')}
 =============
 
-======= RAW JOB POSTINGS FROM API =======
-${JSON.stringify(realJobs.map((j: any, index: number) => ({
-        id: index,
-        title: j.title,
-        company: j.company,
-        location: j.location,
-        snippet: j.snippet,
-        salary: j.salary
-    })).slice(0, 30), null, 2)} // Pass up to 30 jobs
-=============
-
-Return ONLY a strictly valid JSON array of up to 10 selected objects (or fewer if there aren't 10 good matches). No markdown formatting, no code blocks, just raw JSON.
+Select the top best matching real jobs you find and format them perfectly into the required JSON schema. 
+Return ONLY a strictly valid JSON array of objects. No markdown formatting, no code blocks, just raw JSON.
 Each object must have: 
-- "id" (number, MUST BE THE EXACT 'id' PROVIDED IN THE RAW DATA)
-- "title" (string, the job title)
+- "title" (string, the exact job title)
 - "company" (string, the company name)
-- "description" (string, write a clean 50-100 word summary of the role based on the provided snippet. Remove any HTML tags.)
-- "salary_range" (string, use the 'salary' provided, or "Based on Experience" if none)
-- "employment_type" (string, guess based on title/snippet, e.g., "Full-Time", "Contract")
+- "description" (string, write a clean 50-100 word summary of the role based on the posting)
+- "salary_range" (string, provide salary if listed, or "Based on Experience" if none)
+- "employment_type" (string, e.g., "Full-Time", "Contract")
+- "url" (string, the direct link to the real job application page)
 `
-    try {
+
         const response = await ai.models.generateContent({
             model: 'gemini-2.5-flash',
             contents: prompt,
             config: {
-                responseMimeType: "application/json",
+                tools: [{ googleSearch: {} }]
             }
         })
 
-        const text = response.text
+        let text = response.text
         if (!text) {
-            throw new Error("No response from Gemini")
+            throw new Error("No response from Gemini API.")
         }
 
-        const newJobsRaw = JSON.parse(text)
+        // Clean out possible markdown fences (```json ... ```)
+        text = text.replace(/```json/gi, '').replace(/```/g, '').trim();
+
+        let newJobsRaw;
+        try {
+            newJobsRaw = JSON.parse(text);
+        } catch (e) {
+            console.error("Failed to parse Gemini Jobs JSON", text);
+            return { error: "AI failed to format job listings properly." }
+        }
 
         // Save to Supabase job_logs
         const supabase = await createClient()
@@ -122,13 +83,12 @@ Each object must have:
 
         if (user) {
             const inserts = newJobsRaw.map((job: any) => {
-                const rawJob = realJobs[job.id];
                 return {
                     user_id: user.id,
                     title: job.title,
                     company: job.company,
                     description: job.description,
-                    url: rawJob?.link || job.url || "",
+                    url: job.url || "",
                     salary_range: job.salary_range,
                     employment_type: job.employment_type,
                     status: 'scouted'
