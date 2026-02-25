@@ -184,9 +184,9 @@ export default function DashboardClient({ profile }: { profile: any }) {
                                     )}
                                 </div>
 
-                                <div className="flex-grow flex items-end justify-between mt-4 pt-4 border-t border-white/10 group-hover:border-white/20 transition-colors">
-                                    <span className="text-xs text-zinc-400 font-medium whitespace-nowrap hidden sm:inline-block">Scouted {new Date(job.created_at).toLocaleDateString()}</span>
-                                    <div className="flex items-center gap-2">
+                                <div className="flex-grow flex flex-col sm:flex-row items-start sm:items-end justify-between mt-4 pt-4 border-t border-white/10 group-hover:border-white/20 transition-colors gap-3">
+                                    <span className="text-xs text-zinc-400 font-medium whitespace-nowrap">Scouted {new Date(job.created_at).toLocaleDateString()}</span>
+                                    <div className="flex flex-wrap items-center gap-2 justify-end w-full sm:w-auto">
                                         <Button
                                             variant="ghost"
                                             className="text-xs h-8 text-zinc-400 hover:text-white hover:bg-white/10 px-3 transition-colors"
@@ -195,17 +195,17 @@ export default function DashboardClient({ profile }: { profile: any }) {
                                                 setExpandedJobId(expandedJobId === job.id ? null : job.id);
                                             }}
                                         >
-                                            {expandedJobId === job.id ? 'Hide Description' : 'View Description'}
+                                            {expandedJobId === job.id ? 'Hide' : 'View'}
                                         </Button>
                                         <InvestigatorModal companyName={job.company} />
                                         <Button
-                                            className="text-xs h-8 bg-[hsl(var(--neon-cyan))]/20 text-[hsl(var(--neon-cyan))] hover:bg-[hsl(var(--neon-cyan))] hover:text-black font-bold px-4 transition-colors shadow-inner"
+                                            className="text-xs h-8 bg-[hsl(var(--neon-cyan))]/20 text-[hsl(var(--neon-cyan))] hover:bg-[hsl(var(--neon-cyan))] hover:text-black font-bold px-3 transition-colors shadow-inner"
                                             onClick={(e) => {
                                                 e.stopPropagation();
                                                 router.push(`/app/resume/${job.id}`);
                                             }}
                                         >
-                                            Prepare Application <ChevronRight className="w-3.5 h-3.5 ml-1" />
+                                            Prep <ChevronRight className="w-3.5 h-3.5 ml-1 hidden sm:block" />
                                         </Button>
                                     </div>
                                 </div>
