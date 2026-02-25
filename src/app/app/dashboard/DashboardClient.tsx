@@ -15,6 +15,7 @@ import { Loader2, Crosshair, Briefcase, ChevronRight, ExternalLink, HelpCircle, 
 import { runScouterAgent, getScoutedJobs } from "@/app/actions/scouter"
 import { signOutAction } from "@/app/actions/auth"
 import { useRouter } from "next/navigation"
+import { ManualJobEntry } from "@/components/ManualJobEntry"
 
 export default function DashboardClient({ profile }: { profile: any }) {
     const [isPending, startTransition] = useTransition()
@@ -111,14 +112,17 @@ export default function DashboardClient({ profile }: { profile: any }) {
                                 Deploy scouts to scrape matching job targets based on your profile architecture.
                             </CardDescription>
                         </div>
-                        <Button
-                            onClick={handleScout}
-                            disabled={isPending}
-                            className="w-full sm:w-auto bg-[hsl(var(--neon-cyan))] hover:bg-[hsl(var(--neon-cyan))]/80 text-black font-extrabold transition-all h-12 px-8 shadow-[0_0_20px_hsla(var(--neon-cyan),0.4)] hover:shadow-[0_0_30px_hsla(var(--neon-cyan),0.6)] rounded-xl group"
-                        >
-                            {isPending ? <Loader2 className="animate-spin mr-2 h-5 w-5" /> : <Crosshair className="mr-2 h-5 w-5 group-hover:rotate-90 transition-transform duration-500" />}
-                            {isPending ? "Scanning Market..." : "Find More Jobs"}
-                        </Button>
+                        <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
+                            <ManualJobEntry onJobAdded={(job) => setJobs(prev => [job, ...prev])} />
+                            <Button
+                                onClick={handleScout}
+                                disabled={isPending}
+                                className="w-full sm:w-auto bg-[hsl(var(--neon-cyan))] hover:bg-[hsl(var(--neon-cyan))]/80 text-black font-extrabold transition-all h-10 px-8 flex-1 shadow-[0_0_20px_hsla(var(--neon-cyan),0.4)] hover:shadow-[0_0_30px_hsla(var(--neon-cyan),0.6)] rounded-xl group"
+                            >
+                                {isPending ? <Loader2 className="animate-spin mr-2 h-5 w-5" /> : <Crosshair className="mr-2 h-5 w-5 group-hover:rotate-90 transition-transform duration-500" />}
+                                {isPending ? "Scanning Market..." : "Find More Jobs"}
+                            </Button>
+                        </div>
                     </CardHeader>
                 </Card>
 
