@@ -24,35 +24,79 @@ export async function getScoutedJobs() {
 }
 
 export async function runScouterAgent(profileData: any) {
-    // Initialize Gemini
+    if (!process.env.JOOBLE_API_KEY) {
+        return { error: "Jooble API key not configured." }
+    }
+
+    // Step 1: Fetch Real Jobs from Jooble
+    const keywords = profileData.target_roles[0] || "Software Engineer";
+    const location = profileData.remote_only ? "Remote" : profileData.location;
+
+    let realJobs = [];
+    try {
+        const joobleResponse = await fetch(`https://jooble.org/api/${process.env.JOOBLE_API_KEY}`, {
+            method: 'POST',
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                keywords: keywords,
+                location: location,
+                ResultingFrom: 1, // Page number
+                count: 20 // Number of jobs to fetch for AI to filter
+            })
+        });
+
+        if (!joobleResponse.ok) {
+            return { error: "Failed to fetch jobs from Jooble API." }
+        }
+
+        const joobleData = await joobleResponse.json();
+        realJobs = joobleData.jobs || [];
+
+        if (realJobs.length === 0) {
+            return { error: `No active jobs found on Jooble for ${keywords} in ${location}.` }
+        }
+
+    } catch (err) {
+        console.error("Error fetching from Jooble:", err);
+        return { error: "Job Search API failure." }
+    }
+
+    // Step 2: Use Gemini to filter and shape the best matches
     const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY })
 
-    // Securely construct prompt with isolated user data
-    const remoteQuery = profileData.remote_only
-        ? "STRICT: You must ONLY return 100% Remote positions. No hybrid, no on-site."
-        : `Location Context: The user prefers jobs within ${profileData.distance_miles} miles of ${profileData.location}, but some remote roles are also acceptable.`;
-
     const prompt = `
-You are the Nexatask Targeting Agent.
-Your task is to simulate scraping job boards and return 3 Highly Relevant job descriptions that match the user's isolated profile data. 
-${remoteQuery}
+You are the Nexatask Orchestrating Agent.
+I am providing you with a list of ${realJobs.length} real, active job postings fetched from an API.
+Your task is to analyze these jobs against the user's profile, select the top 3 best matching jobs, and format them perfectly into the required JSON schema.
 
-Return ONLY a strictly valid JSON array of objects. No markdown formatting, no code blocks, just raw JSON.
-Each object must have: 
-- "title" (string)
-- "company" (string)
-- "description" (string, realistic job description under 150 words)
-- "url" (string, a realistic simulated URL to the job posting, e.g., https://linkedin.com/jobs/view/12345)
-- "salary_range" (string, e.g., "$120,000 - $140,000" or "Competitive")
-- "employment_type" (string, e.g., "Full-Time", "Contract", "Part-Time")
-
-======= USER_PROFILE_DATA =======
+======= USER PROFILE =======
 Name: ${profileData.name}
-Location: ${profileData.location}
-Target Roles: ${profileData.target_roles.join(', ')}
-Certifications: ${profileData.certifications.join(', ')}
-Education: ${profileData.education}
-======= END_USER_PROFILE_DATA =======
+Role Target: ${profileData.target_roles.join(', ')}
+Skills & Certs: ${profileData.certifications.join(', ')}
+=============
+
+======= RAW JOB POSTINGS FROM API =======
+${JSON.stringify(realJobs.map((j: any) => ({
+        title: j.title,
+        company: j.company,
+        location: j.location,
+        snippet: j.snippet,
+        source: j.source,
+        link: j.link,
+        salary: j.salary
+    })).slice(0, 15), null, 2)} // Limit to 15 to stay well within token limits
+=============
+
+Return ONLY a strictly valid JSON array of the 3 selected objects. No markdown formatting, no code blocks, just raw JSON.
+Each object must have: 
+- "title" (string, the job title)
+- "company" (string, the company name)
+- "description" (string, write a clean 50-100 word summary of the role based on the provided snippet. Remove any HTML tags.)
+- "url" (string, MUST BE EXACTLY THE 'link' PROVIDED IN THE RAW DATA)
+- "salary_range" (string, use the 'salary' provided, or "Based on Experience" if none)
+- "employment_type" (string, guess based on title/snippet, e.g., "Full-Time", "Contract")
 `
     try {
         const response = await ai.models.generateContent({
@@ -98,6 +142,6 @@ Education: ${profileData.education}
         return { jobs: [] }
     } catch (err: any) {
         console.error("Scouter Agent Error:", err)
-        return { error: "Failed to run Scouter Agent." }
+        return { error: "Failed to run AI Scouter Agent filter." }
     }
 }

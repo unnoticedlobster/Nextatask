@@ -151,7 +151,7 @@ export default function DashboardClient({ profile }: { profile: any }) {
                                     <div className="flex gap-2">
                                         {job.url && (
                                             <a
-                                                href={`https://www.google.com/search?q=${encodeURIComponent(`${job.title} ${job.company} job posting`)}`}
+                                                href={job.url.startsWith('http') ? job.url : `https://${job.url}`}
                                                 target="_blank"
                                                 rel="noopener noreferrer"
                                                 onClick={(e) => e.stopPropagation()}
