@@ -11,8 +11,8 @@ import {
     DropdownMenuSeparator,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { Loader2, Crosshair, Briefcase, ChevronRight, ExternalLink, HelpCircle, FileText, CheckCircle } from "lucide-react"
-import { runScouterAgent, getScoutedJobs } from "@/app/actions/scouter"
+import { Loader2, Crosshair, Briefcase, ChevronRight, ExternalLink, HelpCircle, FileText, CheckCircle, Trash2 } from "lucide-react"
+import { runScouterAgent, getScoutedJobs, deleteJobAction } from "@/app/actions/scouter"
 import { signOutAction } from "@/app/actions/auth"
 import { useRouter } from "next/navigation"
 import { ManualJobEntry } from "@/components/ManualJobEntry"
@@ -39,6 +39,15 @@ export default function DashboardClient({ profile }: { profile: any }) {
                 setJobs(prev => [...res.jobs, ...prev])
             }
         })
+    }
+
+    const handleDeleteJob = async (jobId: string, e: React.MouseEvent) => {
+        e.stopPropagation();
+        // Optimistic UI update - remove instantly
+        setJobs(prev => prev.filter(j => j.id !== jobId));
+
+        // Fire backend action
+        await deleteJobAction(jobId);
     }
 
     return (
@@ -166,6 +175,15 @@ export default function DashboardClient({ profile }: { profile: any }) {
                                                 <CheckCircle className="w-3.5 h-3.5 mr-1" /> Validated
                                             </span>
                                         )}
+                                        <Button
+                                            variant="ghost"
+                                            size="sm"
+                                            className="h-[30px] w-[30px] p-0 text-zinc-500 hover:text-red-400 hover:bg-red-500/10 hover:border-red-500/30 border border-transparent rounded-lg transition-all"
+                                            onClick={(e) => handleDeleteJob(job.id, e)}
+                                            title="Delete Job from Radar"
+                                        >
+                                            <Trash2 className="w-4 h-4" />
+                                        </Button>
                                     </div>
                                 </div>
                                 <CardTitle className="text-xl text-white font-extrabold mt-2 leading-tight group-hover:text-[hsl(var(--neon-cyan))] transition-colors">{job.title}</CardTitle>

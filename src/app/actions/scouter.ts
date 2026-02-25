@@ -29,13 +29,15 @@ export async function runScouterAgent(profileData: any) {
     }
 
     // Step 1: Fetch Real Jobs from Jooble
-    const keywords = profileData.target_roles.join(" ") || "Software Engineer";
+    // Join target roles with ' OR ' so Jooble searches for any of them, not an exact string matching all words.
+    const keywords = profileData.target_roles.join(" OR ") || "Software Engineer";
     const location = profileData.remote_only ? "Remote" : profileData.location;
 
     let realJobs = [];
     try {
         const joobleResponse = await fetch(`https://jooble.org/api/${process.env.JOOBLE_API_KEY}`, {
             method: 'POST',
+            cache: 'no-store', // CRITICAL: Stop Next.js from caching the identical job payload
             headers: {
                 "Content-Type": "application/json"
             },
@@ -59,9 +61,9 @@ export async function runScouterAgent(profileData: any) {
             return { error: `No active jobs found on Jooble for ${keywords} in ${location}.` }
         }
 
-    } catch (err) {
+    } catch (err: any) {
         console.error("Error fetching from Jooble:", err);
-        return { error: "Job Search API failure." }
+        return { error: err.message || "Job Search API failure." }
     }
 
     // Step 2: Use Gemini to filter and shape the best matches
@@ -147,4 +149,30 @@ Each object must have:
         console.error("Scouter Agent Error:", err)
         return { error: "Failed to run AI Scouter Agent filter." }
     }
+}
+
+// ==========================================
+// UTILITY: Delete Tracked Job
+// ==========================================
+export async function deleteJobAction(jobId: string) {
+    const supabase = await createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+
+    if (!user) {
+        return { error: 'Unauthorized to delete job data.' }
+    }
+
+    // Ensure users can only delete their own jobs
+    const { error } = await supabase
+        .from('job_logs')
+        .delete()
+        .eq('id', jobId)
+        .eq('user_id', user.id)
+
+    if (error) {
+        console.error("Error deleting job:", error)
+        return { error: "Failed to remove target from radar." }
+    }
+
+    return { success: true }
 }
