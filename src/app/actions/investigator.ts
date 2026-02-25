@@ -19,8 +19,8 @@ export async function fetchCompanyIntel(companyName: string) {
 
     try {
         // 2. Perform the rogue scrape against DuckDuckGo
-        // We look specifically for reddit threads about the working environment
-        const query = encodeURIComponent(`site:reddit.com "${companyName}" working environment OR culture OR review`);
+        // We look for general employee reviews, culture, and work environment chatter across the web
+        const query = encodeURIComponent(`"${companyName}" employee reviews OR culture OR "work environment" -site:linkedin.com`);
         const searchUrl = `https://lite.duckduckgo.com/lite/`;
 
         const response = await fetch(searchUrl, {
@@ -66,7 +66,7 @@ export async function fetchCompanyIntel(companyName: string) {
 
         const prompt = `
 You are an expert Employee Rights Investigator. 
-I have scraped the internet (specifically Reddit and review sites) for anonymous chatter regarding the company: "${companyName}".
+I have scraped the internet (including review sites, news, and forums) for public chatter regarding the company: "${companyName}".
 
 Here are the raw, chaotic text snippets pulled from search results regarding what it is like to work there:
 =================
