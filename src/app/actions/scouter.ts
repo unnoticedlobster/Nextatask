@@ -29,7 +29,7 @@ export async function runScouterAgent(profileData: any) {
     }
 
     // Step 1: Fetch Real Jobs from Jooble
-    const keywords = profileData.target_roles[0] || "Software Engineer";
+    const keywords = profileData.target_roles.join(" ") || "Software Engineer";
     const location = profileData.remote_only ? "Remote" : profileData.location;
 
     let realJobs = [];
@@ -78,23 +78,22 @@ Skills & Certs: ${profileData.certifications.join(', ')}
 =============
 
 ======= RAW JOB POSTINGS FROM API =======
-${JSON.stringify(realJobs.map((j: any) => ({
+${JSON.stringify(realJobs.map((j: any, index: number) => ({
+        id: index,
         title: j.title,
         company: j.company,
         location: j.location,
         snippet: j.snippet,
-        source: j.source,
-        link: j.link,
         salary: j.salary
     })).slice(0, 15), null, 2)} // Limit to 15 to stay well within token limits
 =============
 
 Return ONLY a strictly valid JSON array of the 3 selected objects. No markdown formatting, no code blocks, just raw JSON.
 Each object must have: 
+- "id" (number, MUST BE THE EXACT 'id' PROVIDED IN THE RAW DATA)
 - "title" (string, the job title)
 - "company" (string, the company name)
 - "description" (string, write a clean 50-100 word summary of the role based on the provided snippet. Remove any HTML tags.)
-- "url" (string, MUST BE EXACTLY THE 'link' PROVIDED IN THE RAW DATA)
 - "salary_range" (string, use the 'salary' provided, or "Based on Experience" if none)
 - "employment_type" (string, guess based on title/snippet, e.g., "Full-Time", "Contract")
 `
@@ -119,16 +118,19 @@ Each object must have:
         const { data: { user } } = await supabase.auth.getUser()
 
         if (user) {
-            const inserts = newJobsRaw.map((job: any) => ({
-                user_id: user.id,
-                title: job.title,
-                company: job.company,
-                description: job.description,
-                url: job.url,
-                salary_range: job.salary_range,
-                employment_type: job.employment_type,
-                status: 'scouted'
-            }))
+            const inserts = newJobsRaw.map((job: any) => {
+                const rawJob = realJobs[job.id];
+                return {
+                    user_id: user.id,
+                    title: job.title,
+                    company: job.company,
+                    description: job.description,
+                    url: rawJob?.link || job.url || "",
+                    salary_range: job.salary_range,
+                    employment_type: job.employment_type,
+                    status: 'scouted'
+                }
+            })
 
             const { data, error } = await supabase.from('job_logs').insert(inserts).select()
 

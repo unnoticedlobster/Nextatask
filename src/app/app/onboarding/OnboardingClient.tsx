@@ -16,10 +16,13 @@ export default function OnboardingClient({ initialData }: { initialData: any }) 
     const [errorDetails, setErrorDetails] = useState<any>(null)
     const [distance, setDistance] = useState(initialData?.distance_miles || 25)
 
+    const [remoteOnly, setRemoteOnly] = useState(initialData?.remote_only || false)
+
     const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault()
         const formData = new FormData(e.currentTarget)
         formData.append("distance_miles", distance.toString())
+        formData.append("remote_only", remoteOnly ? "on" : "off")
 
         startTransition(async () => {
             const res = await saveProfileActon(formData)
@@ -41,7 +44,7 @@ export default function OnboardingClient({ initialData }: { initialData: any }) 
                         Securely configure your base professional parameters. Data is isolated privately for your account.
                     </CardDescription>
                 </CardHeader>
-                <CardContent>
+                <CardContent className="pb-24">
                     <form onSubmit={handleSubmit} className="space-y-6">
                         {/* Core Targeting */}
                         <div className="bg-white/5 p-4 rounded-xl border border-white/10 shadow-inner space-y-6">
@@ -71,7 +74,7 @@ export default function OnboardingClient({ initialData }: { initialData: any }) 
                             <div className="space-y-4">
                                 <Label className="text-zinc-200">Job Search Preferences</Label>
                                 <div className="flex items-center space-x-2">
-                                    <Switch id="remote_only" name="remote_only" defaultChecked={initialData?.remote_only || false} />
+                                    <Switch id="remote_only" checked={remoteOnly} onCheckedChange={setRemoteOnly} />
                                     <Label htmlFor="remote_only" className="text-sm font-normal text-zinc-300">Target Remote Only</Label>
                                 </div>
                             </div>
@@ -87,6 +90,7 @@ export default function OnboardingClient({ initialData }: { initialData: any }) 
                                     step={5}
                                     onValueChange={(vals) => setDistance(vals[0])}
                                     className="pt-2"
+                                    disabled={remoteOnly}
                                 />
                                 <p className="text-xs text-zinc-400 italic">Disabled if Remote Only is active.</p>
                             </div>
@@ -181,10 +185,14 @@ export default function OnboardingClient({ initialData }: { initialData: any }) 
 
                         {errorDetails?.general && <p className="text-red-400 text-sm font-medium">{errorDetails.general}</p>}
 
-                        <Button type="submit" disabled={isPending} className="w-full bg-[hsl(var(--neon-cyan))] hover:bg-[hsl(var(--neon-cyan))]/80 text-black font-bold transition-all h-12 text-md mt-4 shadow-[0_0_20px_hsla(var(--neon-cyan),0.4)] hover:shadow-[0_0_30px_hsla(var(--neon-cyan),0.6)]">
-                            {isPending ? <Loader2 className="animate-spin mr-2 h-5 w-5" /> : null}
-                            {isPending ? "Saving Data..." : (initialData ? "Update Profile Information" : "Save and Continue")}
-                        </Button>
+                        <div className="fixed sm:absolute bottom-0 left-0 right-0 p-4 bg-black/80 backdrop-blur-md border-t border-white/10 z-50">
+                            <Button type="submit" disabled={isPending} className="w-full max-w-2xl mx-auto block bg-[hsl(var(--neon-cyan))] hover:bg-[hsl(var(--neon-cyan))]/80 text-black font-bold transition-all h-12 text-md shadow-[0_0_20px_hsla(var(--neon-cyan),0.4)] hover:shadow-[0_0_30px_hsla(var(--neon-cyan),0.6)]">
+                                <div className="flex items-center justify-center h-full">
+                                    {isPending ? <Loader2 className="animate-spin mr-2 h-5 w-5" /> : null}
+                                    {isPending ? "Saving Data..." : (initialData ? "Update Profile Information" : "Save and Continue")}
+                                </div>
+                            </Button>
+                        </div>
                     </form>
                 </CardContent>
             </Card>
