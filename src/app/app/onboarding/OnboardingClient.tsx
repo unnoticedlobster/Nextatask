@@ -72,27 +72,28 @@ export default function OnboardingClient({ initialData }: { initialData: any }) 
 
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 bg-white/5 p-4 rounded-xl border border-white/10 shadow-inner">
                             <div className="space-y-4">
-                                <Label className="text-zinc-200">Job Search Preferences</Label>
-                                <div className="flex items-center space-x-2">
-                                    <Switch id="remote_only" checked={remoteOnly} onCheckedChange={setRemoteOnly} />
-                                    <Label htmlFor="remote_only" className="text-sm font-normal text-zinc-300">Target Remote Only</Label>
+                                <Label className="text-zinc-200">Job Search Mode</Label>
+                                <div className="flex items-center space-x-3 bg-black/30 p-2 rounded-lg border border-white/5 w-fit">
+                                    <Label htmlFor="remote_only" className={`text-sm cursor-pointer ${!remoteOnly ? 'text-[hsl(var(--neon-cyan))] font-bold' : 'text-zinc-500'}`}>Local / In-Person</Label>
+                                    <Switch id="remote_only" checked={remoteOnly} onCheckedChange={setRemoteOnly} className="data-[state=checked]:bg-[hsl(var(--neon-magenta))] data-[state=unchecked]:bg-[hsl(var(--neon-cyan))]" />
+                                    <Label htmlFor="remote_only" className={`text-sm cursor-pointer ${remoteOnly ? 'text-[hsl(var(--neon-magenta))] font-bold' : 'text-zinc-500'}`}>Remote Only</Label>
                                 </div>
                             </div>
                             <div className="space-y-4">
                                 <div className="flex justify-between">
-                                    <Label className="text-zinc-200">Target Radius (Miles)</Label>
-                                    <span className="text-[hsl(var(--neon-cyan))] text-xs font-mono font-bold text-glow-cyan">{distance}m</span>
+                                    <Label className="text-zinc-200">Target Commute Radius</Label>
+                                    <span className="text-[hsl(var(--neon-cyan))] text-xs font-mono font-bold text-glow-cyan">{distance} mins</span>
                                 </div>
                                 <Slider
                                     defaultValue={[distance]}
-                                    max={500}
+                                    max={120}
                                     min={5}
                                     step={5}
                                     onValueChange={(vals) => setDistance(vals[0])}
                                     className="pt-2"
                                     disabled={remoteOnly}
                                 />
-                                <p className="text-xs text-zinc-400 italic">Disabled if Remote Only is active.</p>
+                                <p className="text-xs text-zinc-400 italic">Commute time is disabled for remote searches.</p>
                             </div>
                         </div>
 

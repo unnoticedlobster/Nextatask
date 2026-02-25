@@ -42,6 +42,7 @@ export async function runScouterAgent(profileData: any) {
             body: JSON.stringify({
                 keywords: keywords,
                 location: location,
+                radius: profileData.remote_only ? 0 : profileData.distance_miles,
                 ResultingFrom: 1, // Page number
                 count: 20 // Number of jobs to fetch for AI to filter
             })
