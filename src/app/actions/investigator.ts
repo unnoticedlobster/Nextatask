@@ -24,6 +24,7 @@ export async function fetchCompanyIntel(companyName: string) {
         const searchUrl = `https://html.duckduckgo.com/html/?q=${query}`;
 
         const response = await fetch(searchUrl, {
+            cache: 'no-store',
             headers: {
                 // Simplify headers to look less like an automated headless script trying to spoof Chrome
                 'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
@@ -90,12 +91,21 @@ Return ONLY a strictly valid JSON object matching this exact shape. Do not inclu
             }
         })
 
-        const text = aiResponse.text;
+        let text = aiResponse.text;
         if (!text) {
             throw new Error("No response returned from Gemini Investigator.");
         }
 
-        const structuredDossier = JSON.parse(text);
+        // Clean out possible markdown fences (```json ... ```)
+        text = text.replace(/```json/gi, '').replace(/```/g, '').trim();
+
+        let structuredDossier;
+        try {
+            structuredDossier = JSON.parse(text);
+        } catch (parseErr) {
+            console.error("Failed to parse Gemini JSON:", text);
+            throw new Error("AI failed to output valid JSON for the dossier.");
+        }
 
         return { dossier: structuredDossier };
 

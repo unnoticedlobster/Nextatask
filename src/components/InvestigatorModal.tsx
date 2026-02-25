@@ -46,10 +46,10 @@ export function InvestigatorModal({ companyName }: InvestigatorModalProps) {
             <DialogTrigger asChild>
                 <Button
                     variant="outline"
-                    className="px-3 py-1.5 bg-black/60 hover:bg-orange-500/20 text-orange-400 hover:text-orange-300 font-bold text-xs rounded-lg border border-orange-500/30 hover:border-orange-500/60 transition-all flex items-center gap-1 shadow-[0_0_10px_hsla(var(--neon-orange),0.1)] hover:shadow-[0_0_15px_hsla(var(--neon-orange),0.3)] h-auto"
+                    className="h-8 px-3 bg-black/60 hover:bg-orange-500/20 text-orange-400 hover:text-orange-300 font-bold text-xs rounded-lg border border-orange-500/30 hover:border-orange-500/60 transition-all flex items-center gap-1 shadow-[0_0_10px_hsla(var(--neon-orange),0.1)] hover:shadow-[0_0_15px_hsla(var(--neon-orange),0.3)]"
                     onClick={(e) => e.stopPropagation()}
                 >
-                    <ShieldAlert className="w-3.5 h-3.5" /> Investigate
+                    <ShieldAlert className="w-3.5 h-3.5" /> <span className="hidden sm:inline">Investigate</span>
                 </Button>
             </DialogTrigger>
             <DialogContent className="sm:max-w-2xl bg-black/95 border-orange-500/30 text-white shadow-[0_0_50px_rgba(249,115,22,0.15)] max-h-[90vh] flex flex-col p-0 overflow-hidden">
