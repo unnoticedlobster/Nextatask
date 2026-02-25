@@ -16,6 +16,7 @@ import { runScouterAgent, getScoutedJobs } from "@/app/actions/scouter"
 import { signOutAction } from "@/app/actions/auth"
 import { useRouter } from "next/navigation"
 import { ManualJobEntry } from "@/components/ManualJobEntry"
+import { InvestigatorModal } from "@/components/InvestigatorModal"
 
 export default function DashboardClient({ profile }: { profile: any }) {
     const [isPending, startTransition] = useTransition()
@@ -196,6 +197,7 @@ export default function DashboardClient({ profile }: { profile: any }) {
                                         >
                                             {expandedJobId === job.id ? 'Hide Description' : 'View Description'}
                                         </Button>
+                                        <InvestigatorModal companyName={job.company} />
                                         <Button
                                             className="text-xs h-8 bg-[hsl(var(--neon-cyan))]/20 text-[hsl(var(--neon-cyan))] hover:bg-[hsl(var(--neon-cyan))] hover:text-black font-bold px-4 transition-colors shadow-inner"
                                             onClick={(e) => {
