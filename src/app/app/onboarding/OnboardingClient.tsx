@@ -34,10 +34,8 @@ export default function OnboardingClient({ initialData }: { initialData: any }) 
 
     return (
         <div className="min-h-screen text-white flex items-center justify-center p-4 relative py-12">
-            <div className="absolute top-[10%] left-[10%] w-[40%] h-[40%] bg-emerald-600/10 blur-[120px] rounded-full pointer-events-none" />
-
-            <Card className="w-full max-w-2xl text-foreground glass-panel relative z-10 overflow-hidden">
-                <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-[hsl(var(--neon-cyan))] via-[hsl(var(--neon-magenta))] to-[hsl(var(--neon-green))] opacity-80" />
+            <Card className="w-full max-w-2xl text-foreground glass-panel glass-panel-hover relative z-10 overflow-hidden border-0">
+                <div className="absolute top-0 left-0 w-full h-[2px] bg-gradient-to-r from-transparent via-[hsl(var(--neon-cyan))] to-transparent opacity-80" />
                 <CardHeader>
                     <CardTitle className="text-2xl text-white font-bold tracking-tight">Nexatask Profile Setup</CardTitle>
                     <CardDescription className="text-zinc-300">
@@ -186,11 +184,11 @@ export default function OnboardingClient({ initialData }: { initialData: any }) 
 
                         {errorDetails?.general && <p className="text-red-400 text-sm font-medium">{errorDetails.general}</p>}
 
-                        <div className="fixed sm:absolute bottom-0 left-0 right-0 p-4 bg-black/80 backdrop-blur-md border-t border-white/10 z-50">
-                            <Button type="submit" disabled={isPending} className="w-full max-w-2xl mx-auto block bg-[hsl(var(--neon-cyan))] hover:bg-[hsl(var(--neon-cyan))]/80 text-black font-bold transition-all h-12 text-md shadow-[0_0_20px_hsla(var(--neon-cyan),0.4)] hover:shadow-[0_0_30px_hsla(var(--neon-cyan),0.6)]">
+                        <div className="fixed sm:absolute bottom-0 left-0 right-0 p-4 bg-black/80 backdrop-blur-md border-t border-white/5 z-50">
+                            <Button type="submit" disabled={isPending} className="w-full max-w-2xl mx-auto block bg-gradient-to-r from-[hsl(var(--neon-cyan))] to-[hsl(var(--neon-cyan))/80] text-black font-bold hover:opacity-90 transition-all h-12 text-md shadow-[0_0_20px_hsla(var(--neon-cyan),0.4)] hover:shadow-[0_0_30px_hsla(var(--neon-cyan),0.6)]">
                                 <div className="flex items-center justify-center h-full">
                                     {isPending ? <Loader2 className="animate-spin mr-2 h-5 w-5" /> : null}
-                                    {isPending ? "Saving Data..." : (initialData ? "Update Profile Information" : "Save and Continue")}
+                                    {isPending ? "Validating & Encrypting..." : (initialData ? "Update Profile Information" : "Save and Continue")}
                                 </div>
                             </Button>
                         </div>

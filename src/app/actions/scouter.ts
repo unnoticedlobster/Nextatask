@@ -45,8 +45,8 @@ export async function runScouterAgent(profileData: any) {
                 keywords: keywords,
                 location: location,
                 radius: profileData.remote_only ? 0 : profileData.distance_miles,
-                ResultingFrom: 1, // Page number
-                count: 20 // Number of jobs to fetch for AI to filter
+                ResultingFrom: Math.floor(Math.random() * 3) + 1, // Randomize page 1-3 to get broader variations
+                count: 30 // Pull slightly more to ensure AI has fresh options
             })
         });
 
@@ -135,7 +135,24 @@ Each object must have:
                 }
             })
 
-            const { data, error } = await supabase.from('job_logs').insert(inserts).select()
+            // Dedup check: Ensure we don't insert jobs the user already has on their dashboard
+            const { data: existingJobs } = await supabase
+                .from('job_logs')
+                .select('title, company')
+                .eq('user_id', user.id);
+
+            const filteredInserts = inserts.filter((newJob: any) => {
+                if (!existingJobs) return true;
+                return !existingJobs.some(existing =>
+                    existing.title === newJob.title && existing.company === newJob.company
+                );
+            });
+
+            if (filteredInserts.length === 0) {
+                return { jobs: [], message: "AI selected jobs you already have on your radar. Try scouting again." }
+            }
+
+            const { data, error } = await supabase.from('job_logs').insert(filteredInserts).select()
 
             if (error) {
                 console.error("Error saving scouted jobs", error)

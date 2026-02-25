@@ -146,15 +146,18 @@ export default function DashboardClient({ profile }: { profile: any }) {
                         </div>
                     )}
 
-                    {jobs.map((job: any) => (
-                        <div
+                    {jobs.map((job: any, index: number) => (
+                        // Add stagger delay for a cool cascade loading effect
+                        <Card
                             key={job.id}
-                            className={`group glass-panel p-6 rounded-2xl flex flex-col justify-between min-h-[220px] relative overflow-hidden transition-all duration-300 ${expandedJobId === job.id ? 'col-span-1 md:col-span-2 lg:col-span-3 border-[hsl(var(--neon-green))]/50 bg-black/60 shadow-[0_0_30px_hsla(var(--neon-green),0.1)]' : 'glass-panel-hover'}`}
+                            className={`glass-panel glass-panel-hover overflow-hidden group border-0 text-white relative animate-in fade-in slide-in-from-bottom-4 duration-500 ${expandedJobId === job.id ? 'col-span-1 md:col-span-2 lg:col-span-3 border-[hsl(var(--neon-green))]/50 bg-black/60 shadow-[0_0_30px_hsla(var(--neon-green),0.1)]' : ''}`}
+                            style={{ animationFillMode: 'both', animationDelay: `${index * 50}ms` }}
                         >
-                            <div className="absolute inset-0 bg-gradient-to-br from-[hsl(var(--neon-cyan))]/0 to-[hsl(var(--neon-magenta))]/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                            {/* Subtle neon accent line at the top of the card */}
+                            <div className="absolute top-0 left-0 w-full h-[2px] bg-gradient-to-r from-transparent via-[hsl(var(--neon-cyan))] to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
 
-                            <div className="relative z-10 flex flex-col h-full">
-                                <div className="flex justify-between items-start mb-4">
+                            <CardHeader className="pb-3 border-b border-white/5 bg-white/[0.02]">
+                                <div className="flex justify-between items-start">
                                     <div className="p-3 bg-black/50 border border-white/10 rounded-2xl group-hover:border-[hsl(var(--neon-cyan))]/50 transition-colors shadow-inner">
                                         <Briefcase className="w-6 h-6 text-[hsl(var(--neon-cyan))] drop-shadow-[0_0_8px_hsla(var(--neon-cyan),0.8)] transition-all group-hover:scale-110" />
                                     </div>
@@ -171,14 +174,14 @@ export default function DashboardClient({ profile }: { profile: any }) {
                                             </a>
                                         )}
                                         {job.status === 'validated' && (
-                                            <span className="px-3 py-1.5 flex items-center bg-[hsl(var(--neon-magenta))]/20 text-[hsl(var(--neon-magenta))] font-bold text-xs rounded-lg border border-[hsl(var(--neon-magenta))]/40 shadow-[0_0_10px_hsla(var(--neon-magenta),0.3)]">
+                                            <span className="px-3 py-1.5 flex items-center bg-[hsl(var(--neon-magenta))]/15 text-[hsl(var(--neon-magenta))] font-bold text-xs rounded-lg border border-[hsl(var(--neon-magenta))]/30 shadow-[0_0_15px_hsla(var(--neon-magenta),0.2)]">
                                                 <CheckCircle className="w-3.5 h-3.5 mr-1" /> Validated
                                             </span>
                                         )}
                                         <Button
                                             variant="ghost"
                                             size="sm"
-                                            className="h-[30px] w-[30px] p-0 text-zinc-500 hover:text-red-400 hover:bg-red-500/10 hover:border-red-500/30 border border-transparent rounded-lg transition-all"
+                                            className="h-[30px] w-[30px] p-0 text-zinc-500 hover:text-red-400 hover:bg-red-500/15 hover:border-red-500/30 border border-transparent rounded-lg transition-all"
                                             onClick={(e) => handleDeleteJob(job.id, e)}
                                             title="Delete Job from Radar"
                                         >
@@ -186,18 +189,24 @@ export default function DashboardClient({ profile }: { profile: any }) {
                                         </Button>
                                     </div>
                                 </div>
-                                <CardTitle className="text-xl text-white font-extrabold mt-2 leading-tight group-hover:text-[hsl(var(--neon-cyan))] transition-colors">{job.title}</CardTitle>
-                                <CardDescription className="text-zinc-300 font-bold text-sm mt-1 mb-3">{job.company}</CardDescription>
-
+                                <CardTitle className="text-2xl text-white font-black mt-3 leading-tight group-hover:bg-clip-text-gradient group-hover:text-transparent transition-all duration-300">{job.title}</CardTitle>
+                                <CardDescription className="text-zinc-400 font-medium text-sm mt-1">{job.company}</CardDescription>
+                            </CardHeader>
+                            <CardContent className="p-6 flex flex-col h-full">
                                 <div className="flex flex-wrap gap-2 mt-auto">
                                     {job.employment_type && (
-                                        <span className="px-2 py-1 bg-white/5 border border-white/10 rounded text-xs text-zinc-300 font-medium">
+                                        <span className="px-2.5 py-1 bg-white/5 border border-white/10 rounded text-xs text-zinc-300 font-medium break-words">
                                             {job.employment_type}
                                         </span>
                                     )}
-                                    {job.salary_range && (
-                                        <span className="px-2 py-1 bg-[hsl(var(--neon-green))]/10 border border-[hsl(var(--neon-green))]/20 rounded text-[hsl(var(--neon-green))] text-xs font-bold shadow-inner">
-                                            {job.salary_range}
+                                    {job.location && (
+                                        <span className="px-2.5 py-1 bg-zinc-800/80 text-zinc-300 text-xs rounded-md border border-white/10 shadow-inner break-words">
+                                            {job.location}
+                                        </span>
+                                    )}
+                                    {job.salary_range && job.salary_range !== "Based on Experience" && (
+                                        <span className="px-2.5 py-1 bg-[hsl(var(--neon-green))]/10 text-[hsl(var(--neon-green))] text-xs font-semibold rounded-md border border-[hsl(var(--neon-green))]/20 shadow-inner break-words">
+                                            {job.salary_range.replace(/<[^>]*>?/gm, '')}
                                         </span>
                                     )}
                                 </div>
@@ -217,7 +226,7 @@ export default function DashboardClient({ profile }: { profile: any }) {
                                         </Button>
                                         <InvestigatorModal companyName={job.company} />
                                         <Button
-                                            className="text-xs h-8 bg-[hsl(var(--neon-cyan))]/20 text-[hsl(var(--neon-cyan))] hover:bg-[hsl(var(--neon-cyan))] hover:text-black font-bold px-3 transition-colors shadow-inner"
+                                            className="text-xs h-8 bg-gradient-to-r from-[hsl(var(--neon-cyan))] to-[hsl(var(--neon-cyan))/80] text-black hover:opacity-90 font-bold px-4 transition-all shadow-[0_0_15px_hsla(var(--neon-cyan),0.4)] hover:shadow-[0_0_25px_hsla(var(--neon-cyan),0.6)]"
                                             onClick={(e) => {
                                                 e.stopPropagation();
                                                 router.push(`/app/resume/${job.id}`);
@@ -239,8 +248,8 @@ export default function DashboardClient({ profile }: { profile: any }) {
                                         </p>
                                     </div>
                                 )}
-                            </div>
-                        </div>
+                            </CardContent>
+                        </Card>
                     ))}
                 </div>
             </div>

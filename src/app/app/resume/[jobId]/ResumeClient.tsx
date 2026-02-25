@@ -104,7 +104,7 @@ export default function ResumeClient({ job }: { job: any }) {
                     <div className="lg:col-span-4 flex flex-col gap-6">
 
                         {/* Execution Sequence Card */}
-                        <Card className="glass-panel backdrop-blur-3xl">
+                        <Card className="glass-panel glass-panel-hover">
                             <CardHeader>
                                 <CardTitle className="text-lg text-white font-bold tracking-tight">Execution Sequence</CardTitle>
                                 <CardDescription className="text-zinc-300">Generate, tailor, and validate your application materials.</CardDescription>
@@ -147,7 +147,7 @@ export default function ResumeClient({ job }: { job: any }) {
                             <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
 
                                 {/* Match Score */}
-                                <Card className="glass-panel overflow-hidden relative border-white/10 group hover:border-[hsl(var(--neon-cyan))]/50 transition-colors duration-500">
+                                <Card className="glass-panel glass-panel-hover overflow-hidden relative border-white/10 group">
                                     <div className="absolute right-0 top-0 w-32 h-32 bg-[hsl(var(--neon-cyan))]/10 blur-3xl pointer-events-none rounded-full transition-all group-hover:scale-150 group-hover:bg-[hsl(var(--neon-cyan))]/20" />
                                     <CardHeader className="pb-2">
                                         <CardTitle className="text-md flex items-center text-[hsl(var(--neon-cyan))] text-glow-cyan">
@@ -179,7 +179,7 @@ export default function ResumeClient({ job }: { job: any }) {
 
                                 {/* LinkedIn Outreach */}
                                 {resumeData.linkedin_outreach && (
-                                    <Card className="glass-panel border-white/10 group hover:border-[hsl(var(--neon-magenta))]/50 transition-colors duration-500">
+                                    <Card className="glass-panel glass-panel-hover border-white/10 group">
                                         <CardHeader className="pb-2">
                                             <CardTitle className="text-md flex items-center text-[hsl(var(--neon-magenta))] text-glow-magenta">
                                                 <MessageSquare className="w-4 h-4 mr-2" /> Recruiter Outreach Draft
@@ -202,7 +202,7 @@ export default function ResumeClient({ job }: { job: any }) {
 
                                 {/* Interview Prep */}
                                 {resumeData.interview_question && (
-                                    <Card className="glass-panel border-white/10 group hover:border-[hsl(var(--neon-green))]/50 transition-colors duration-500">
+                                    <Card className="glass-panel glass-panel-hover border-white/10 group">
                                         <CardHeader className="pb-2">
                                             <CardTitle className="text-md flex items-center text-[hsl(var(--neon-green))]">
                                                 <HelpCircle className="w-4 h-4 mr-2" /> Anticipated Interview Question
@@ -269,7 +269,7 @@ export default function ResumeClient({ job }: { job: any }) {
                                     </Card>
                                 )}
 
-                                <Card className={`glass-panel border-2 backdrop-blur-3xl shadow-[0_0_30px_rgba(0,0,0,0.5)] ${status === 'validated' ? 'border-[hsl(var(--neon-cyan))]/50 bg-[hsl(var(--neon-cyan))]/5 shadow-[0_0_20px_hsla(var(--neon-cyan),0.1)]' : 'border-red-500/50 bg-red-500/5'}`}>
+                                <Card className={`glass-panel glass-panel-hover border-2 shadow-[0_0_30px_rgba(0,0,0,0.5)] ${status === 'validated' ? 'border-[hsl(var(--neon-cyan))]/50 bg-[hsl(var(--neon-cyan))]/5 shadow-[0_0_20px_hsla(var(--neon-cyan),0.1)]' : 'border-red-500/50 bg-red-500/5'}`}>
                                     <CardHeader>
                                         <CardTitle className={`text-lg font-bold tracking-tight ${status === 'validated' ? 'text-[hsl(var(--neon-cyan))] text-glow-cyan' : 'text-red-400'} flex items-center`}>
                                             {status === 'validated' ? <ShieldAlert className="w-5 h-5 mr-3" /> : <AlertTriangle className="w-5 h-5 mr-3" />}
