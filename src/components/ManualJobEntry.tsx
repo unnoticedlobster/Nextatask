@@ -54,7 +54,7 @@ export function ManualJobEntry({ onJobAdded }: { onJobAdded: (job: any) => void 
                     <PlusCircle className="w-4 h-4 mr-2" /> Add Job Manually
                 </Button>
             </DialogTrigger>
-            <DialogContent className="sm:max-w-md bg-black/95 border-white/20 text-white shadow-[0_0_50px_hsla(var(--neon-cyan),0.1)]">
+            <DialogContent className="sm:max-w-md bg-black/95 border-white/20 text-white shadow-[0_0_50px_hsla(var(--neon-cyan),0.1)] max-h-[90vh] overflow-y-auto">
                 <DialogHeader>
                     <DialogTitle className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-[hsl(var(--neon-cyan))] to-[hsl(var(--neon-magenta))]">
                         Manual Job Entry
