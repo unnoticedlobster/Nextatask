@@ -72,7 +72,7 @@ export async function runScouterAgent(profileData: any) {
     const prompt = `
 You are the Nexatask Orchestrating Agent.
 I am providing you with a list of ${realJobs.length} real, active job postings fetched from an API.
-Your task is to analyze these jobs against the user's profile, select the top 3 best matching jobs, and format them perfectly into the required JSON schema.
+Your task is to analyze these jobs against the user's profile, select the top 10 best matching jobs, and format them perfectly into the required JSON schema.
 
 ======= USER PROFILE =======
 Name: ${profileData.name}
@@ -88,10 +88,10 @@ ${JSON.stringify(realJobs.map((j: any, index: number) => ({
         location: j.location,
         snippet: j.snippet,
         salary: j.salary
-    })).slice(0, 15), null, 2)} // Limit to 15 to stay well within token limits
+    })).slice(0, 30), null, 2)} // Pass up to 30 jobs
 =============
 
-Return ONLY a strictly valid JSON array of the 3 selected objects. No markdown formatting, no code blocks, just raw JSON.
+Return ONLY a strictly valid JSON array of up to 10 selected objects (or fewer if there aren't 10 good matches). No markdown formatting, no code blocks, just raw JSON.
 Each object must have: 
 - "id" (number, MUST BE THE EXACT 'id' PROVIDED IN THE RAW DATA)
 - "title" (string, the job title)
