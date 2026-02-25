@@ -21,15 +21,17 @@ export async function fetchCompanyIntel(companyName: string) {
         // 2. Perform the rogue scrape against DuckDuckGo
         // We look specifically for reddit threads about the working environment
         const query = encodeURIComponent(`site:reddit.com "${companyName}" working environment OR culture OR review`);
-        const searchUrl = `https://html.duckduckgo.com/html/?q=${query}`;
+        const searchUrl = `https://lite.duckduckgo.com/lite/`;
 
         const response = await fetch(searchUrl, {
+            method: 'POST',
             cache: 'no-store',
             headers: {
-                // Simplify headers to look less like an automated headless script trying to spoof Chrome
-                'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
-                'Accept-Language': 'en-US,en;q=0.5',
-            }
+                // Use a standard UA to bypass basic blocks, but target the Lite endpoint which is extremely resilient
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)'
+            },
+            body: `q=${query}`
         });
 
         if (!response.ok) {
@@ -41,7 +43,7 @@ export async function fetchCompanyIntel(companyName: string) {
 
         // 3. Extract the snippet text from search results
         let rawSnippets: string[] = [];
-        $('.result__snippet').each((i, element) => {
+        $('.result-snippet').each((i, element) => {
             rawSnippets.push($(element).text().trim());
         });
 
